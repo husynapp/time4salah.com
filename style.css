@@ -1,0 +1,42 @@
+#Fajr{
+    background: linear-gradient(to bottom, rgba(37, 61, 128,1) 11.727086572520982%,rgba(37, 61, 128,1) 21.145691810760987%,rgba(37, 85, 128,1) 44.51778629083803%,rgba(57, 60, 143,1) 60.738717534473594%,rgba(128, 61, 37,1) 71.20383446585137%,rgba(78, 64, 63,1) 84.63406786111953%,rgba(68, 65, 69,1) 87.94802155605582%);
+}
+
+#Sunrise{
+    background: linear-gradient(to top, #58151A, #BC2909, #BA6D09, #71A8EE, #3072EB, #1552C6, #0542A8);
+}
+#Zuhr{
+    background-image: radial-gradient(circle 150px at 50% 20%, white, yellow, lightyellow, skyblue);
+  }
+#Asr{
+    background-image: radial-gradient(circle 150px at 80% 80%, white, yellow, lightyellow, lightblue);
+}
+#Maghrib{
+    background: linear-gradient(to top, #040308, #AD4A28, #DD723C, #FC7001, #DCB697, #9BA5AE, #3E5879, #020B1A);
+}
+#Isha{
+    background: linear-gradient(45deg, #855988, #6b4984, #2b2f77, #141852, #070b34);
+
+}
+
+#Eid{
+    background: linear-gradient(to right, #56ab2f, #a8e063);
+}
+
+#ct, #hijriDate, #b786, #Eid{
+    font-size: 5vw;
+}
+
+body{
+    background-color: #40F99B;
+}
+
+* {
+    border-radius: 0 !important;
+  }
+
+.row{
+    margin: 0;
+}
+
+
