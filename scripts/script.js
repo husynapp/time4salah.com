@@ -61,6 +61,15 @@ function displayTimeRemaining(data) {
     document.getElementById("np").innerHTML = `NEXT SALAH IN: ${("0" + hours).slice(-2)}:${("0" + minutes).slice(-2)}:${("0" + seconds).slice(-2)}`;
 }
 
+function adjustTime(salah, salahTime){
+    var adjustment = returnAdjustmentTime(salah)
+    var time = moment(salahTime, "HH:mm")
+    if(salah != "Fajr" && salah != "Fajr2" && salah != "Sunrise"){
+        if(time.hour() < 12 ){time.add(12, "h");}
+    }
+    return time.add(adjustment,"m").format("HH:mm")
+}
+
 
 function filterByDate(date, data){
 		var date = new Date(date);
@@ -95,37 +104,21 @@ function addHijriDate(){
         showWeekDay: false});
 }
 
-//Old way
-// function addHijriDate(data){
-//     var Hijridate = data[0].datehijriday;
-//     var monthEn = data[0].datehijrimonthen;
-//     var monthAr = data[0].datehijrimonthar;
-//     var year = data[0].datehijriyear;
-//     var hijriMonthNo = data[0].datehijrimonthnumber;
-//     var fullHijriDate = monthAr + " - "  + Hijridate + " - " + monthEn + " - " + year;
-//     if(Hijridate == undefined || monthAr == undefined || monthAr == undefined || year == undefined){
-//         fullHijriDate = "Issue retrieving hijri date";
-//     }
-//     document.getElementById("hijriDate").innerHTML = fullHijriDate;
-//     if((hijriMonthNo == 10 &&Hijridate >= 1 && Hijridate <=3) || (hijriMonthNo == 12 && Hijridate >= 10 && Hijridate <15)){
-//         document.getElementById("eidDiv").style.display = "block";
-//     }
-// }
-
 function displayTimings(obj){
     var isFriday = new Date().getDay() == 5;
     obj.forEach(function(item) {
         Object.keys(item).forEach(function(key) {
-        //   console.log("key:" + key + "value:" + item[key]);
+        var time = moment(item[key], "HH:mm").format("hh:mm");
+        console.log(time);
             if (key != "Fajr2") {
             var div = document.getElementById(key);
             var divT = '';
             if(isFriday && key == "Zuhr"){
                 divT = `<span> <p class="ptitle"> Jummah </p>
-                <p class="ptime"> ${item[key]} </p></span>`
+                <p class="ptime"> ${time} </p></span>`
             }else{
             divT = `<span> <p class="ptitle"> ${key} </p>
-                        <p class="ptime"> ${item[key]} </p></span>`
+                        <p class="ptime"> ${time} </p></span>`
                     }
             if (key != "Fajr2") {div.innerHTML = divT;}
             }
@@ -134,11 +127,29 @@ function displayTimings(obj){
       });
 }
 
+function returnAdjustmentTime(salah){
+    //Future plan to have dynamic adjustment
+    var adjustment = 0;
+    switch(salah){
+        case "Fajr", "Fajr2" : adjustment = 0;
+        break;
+        case "Zuhr" : adjustment = 5;
+        break;
+        case "Asr" : adjustment = 0;
+        break;
+        case "Maghrib" : adjustment = 4;
+        break;
+        case "Isha" : adjustment = -9;
+        break;
+        default: adjustment = 0;
+        break;
+    }
+    return adjustment;
+}
+
 function parseCSV(){
     var csvSrc = "data/"+ getCurrentMonthFileName();
-    // var hadithNo = getNumberOfDays("2021-05-30",new Date());
-    // getAyah(hadithNo);
-    // getHadith(hadithNo);
+
     d3.csv(csvSrc).then(function(data){
         var today = new Date();
         dateLastParsed = today.getDate();
@@ -151,94 +162,17 @@ function parseCSV(){
         // addHijriDate(filtered);
         addHijriDate();
 
-        prayertime = [{"Fajr": filtered[0].timingsFajr.substring(0,5)},{"Sunrise":filtered[0].timingsSunrise.substring(0,5)},
-                        {"Zuhr":filtered[0].timingsDhuhr.substring(0,5)},{"Asr": filtered[0].timingsAsr.substring(0,5)},
-                    {"Maghrib": filtered[0].timingsMaghrib.substring(0,5)}, {"Isha":filtered[0].timingsIsha.substring(0,5)},
-                    {"Fajr2":fajr2.substring(0,5)}];
+        prayertime = [  {"Fajr": adjustTime("Fajr",filtered[0].timingsFajr.substring(0,5))},
+                        {"Sunrise": adjustTime("Sunrise",filtered[0].timingsSunrise.substring(0,5))},
+                        {"Zuhr":adjustTime("Zuhr",filtered[0].timingsDhuhr.substring(0,5))},
+                        {"Asr": adjustTime("Asr",filtered[0].timingsAsr.substring(0,5))},
+                        {"Maghrib": adjustTime("Maghrib",filtered[0].timingsMaghrib.substring(0,5))}, 
+                        {"Isha":adjustTime("Isha",filtered[0].timingsIsha.substring(0,5))},
+                        {"Fajr2":adjustTime("Fajr2",fajr2.substring(0,5))}];
 
         displayTimings(prayertime);
         GprayerTime = prayertime;
         }
     )
     display_c();
-}
-
-
-// function getHadith(number){
-//     let request = new XMLHttpRequest();
-//     var url = 'https://api.sunnah.com/v1/collections/riyadussalihin/hadiths/' + number;
-//     request.open("GET", url);
-//     request.setRequestHeader("x-api-key","Cl6LyXnsYg8aaJQrNCoIy5ltFQSWa3Yc7x42x8xt");
-//     request.setRequestHeader('Access-Control-Allow-Origin', 'https://time4salah.com');
-//     request.setRequestHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
-//     request.setRequestHeader('Access-Control-Allow-Headers', 'Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers,X-Access-Token,XKey,Authorization');
-//     // request.setRequestHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-  
-//     // request.withCredentials = true;
-//     request.send();
-//     request.onload = ()=>{
-//     // console.log(request);
-//     if(request.status == 200){
-//     //   console.log(JSON.parse(request.response));
-//       HadithText = JSON.parse(request.response);
-//       var hadithDiv = HadithText.hadith[1].body;
-//       var english = HadithText.hadith[0].body.replaceAll("<br/>","").replace("<b>", "<br/> <b>");
-//     //   console.log(english);
-//       hadithDiv += english;
-//       document.getElementById("hadith").innerHTML = hadithDiv;
-//     }else{
-//       console.log(`error ${request.status} ${request.statusText}`)
-//       var error = `Error returning hadith from server, please contact administrator at www.husyn.app`
-//       error += request.statusText;
-//       document.getElementById("hadith").innerHTML = error;
-//       }
-//     }
-//   }
-
-  
-// function getAyah(number){
-//     let request = new XMLHttpRequest();
-//     var url = `http://api.alquran.cloud/v1/ayah/${number}/editions/quran-uthmani,en.pickthall`
-//     request.open("GET", url);
-//     // request.setRequestHeader("x-api-key","SqD712P3E82xnwOAEOkGd5JZH8s9wRR24TqNFzjk");
-//     request.setRequestHeader('Access-Control-Allow-Origin', 'https://www,time4salah.com');
-//     request.setRequestHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
-//     request.setRequestHeader('Access-Control-Allow-Headers', 'Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers,X-Access-Token,XKey,Authorization');
-//     // request.setRequestHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-  
-//     // request.withCredentials = true;
-//     request.send();
-//     request.onload = ()=>{
-//     // console.log(request);
-//     if(request.status == 200){
-//       console.log(JSON.parse(request.response));
-//       var verse = JSON.parse(request.response);
-//       console.log(verse.data[0].text);
-//     //   var english = HadithText.hadith[0].body.replaceAll("<br/>","").replace("<b>", "<br/> <b>");
-//     //   console.log(english);
-//     //   hadithDiv += english;
-//     //   document.getElementById("hadith").innerHTML = hadithDiv;
-//     }else{
-//       console.log(`error ${request.status} ${request.statusText}`)
-//       var error = `Error returning hadith from server, please contact administrator at www.husyn.app`
-//       error += request.statusText;
-//       document.getElementById("hadith").innerHTML = error;
-//       }
-//     }
-//   }
-
-  function getNumberOfDays(start, end) {
-    const date1 = new Date(start);
-    const date2 = new Date(end);
-
-    // One day in milliseconds
-    const oneDay = 1000 * 60 * 60 * 24;
-
-    // Calculating the time difference between two dates
-    const diffInTime = date2.getTime() - date1.getTime();
-
-    // Calculating the no. of days between two dates
-    const diffInDays = Math.round(diffInTime / oneDay);
-
-    return diffInDays;
 }
