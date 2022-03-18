@@ -1,6 +1,34 @@
 var GprayerTime;
 var dateLastParsed;
-var HadithText;
+
+function parseCSV(){
+    var csvSrc = "data/"+ getCurrentMonthFileName();
+
+    d3.csv(csvSrc).then(function(data){
+        var today = new Date();
+        dateLastParsed = today.getDate();
+        var filtered = filterByDate(today, data);
+        // varTodaysData = filtered;
+        var tomorrow = filterByDate(today.setDate(today.getDate()+ 1), data);
+
+        var fajr2 = tomorrow.any ? tomorrow[0].timingsFajr : filtered[0].timingsFajr;
+
+        addHijriDate();
+
+        prayertime = [  {"Fajr": adjustTime("Fajr",filtered[0].timingsFajr.substring(0,5))},
+                        {"Sunrise": adjustTime("Sunrise",filtered[0].timingsSunrise.substring(0,5))},
+                        {"Zuhr":adjustTime("Zuhr",filtered[0].timingsDhuhr.substring(0,5))},
+                        {"Asr": adjustTime("Asr",filtered[0].timingsAsr.substring(0,5))},
+                        {"Maghrib": adjustTime("Maghrib",filtered[0].timingsMaghrib.substring(0,5))}, 
+                        {"Isha":adjustTime("Isha",filtered[0].timingsIsha.substring(0,5))},
+                        {"Fajr2":adjustTime("Fajr2",fajr2.substring(0,5))}];
+
+        displayTimings(prayertime);
+        GprayerTime = prayertime;
+        }
+    )
+    display_c();
+}
 
 function display_c(){
     var refresh=1000; // Refresh rate in milli seconds
@@ -98,10 +126,18 @@ function addHijriDate(){
         hijriLang: 'en',
         gregLang: 'en',
         correction: +1});
+    isEidToday()
     $('#hijriDate').append("||");
     $('#hijriDate').hijriDate({
         correction: +1,
         showWeekDay: false});
+}
+
+function isEidToday(){
+    var date = $('.hijri-date').text();
+    if (date.includes("1 Ramadan")){
+        $('#eidDiv').show();
+    }
 }
 
 function displayTimings(obj){
@@ -145,34 +181,4 @@ function returnAdjustmentTime(salah){
         break;
     }
     return adjustment;
-}
-
-function parseCSV(){
-    var csvSrc = "data/"+ getCurrentMonthFileName();
-
-    d3.csv(csvSrc).then(function(data){
-        var today = new Date();
-        dateLastParsed = today.getDate();
-        var filtered = filterByDate(today, data);
-        // varTodaysData = filtered;
-        var tomorrow = filterByDate(today.setDate(today.getDate()+ 1), data);
-
-        var fajr2 = tomorrow.any ? tomorrow[0].timingsFajr : filtered[0].timingsFajr;
-
-        // addHijriDate(filtered);
-        addHijriDate();
-
-        prayertime = [  {"Fajr": adjustTime("Fajr",filtered[0].timingsFajr.substring(0,5))},
-                        {"Sunrise": adjustTime("Sunrise",filtered[0].timingsSunrise.substring(0,5))},
-                        {"Zuhr":adjustTime("Zuhr",filtered[0].timingsDhuhr.substring(0,5))},
-                        {"Asr": adjustTime("Asr",filtered[0].timingsAsr.substring(0,5))},
-                        {"Maghrib": adjustTime("Maghrib",filtered[0].timingsMaghrib.substring(0,5))}, 
-                        {"Isha":adjustTime("Isha",filtered[0].timingsIsha.substring(0,5))},
-                        {"Fajr2":adjustTime("Fajr2",fajr2.substring(0,5))}];
-
-        displayTimings(prayertime);
-        GprayerTime = prayertime;
-        }
-    )
-    display_c();
 }
